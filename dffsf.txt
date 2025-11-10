@@ -1,0 +1,97 @@
+//스파게티주의
+문자 1
+기본:
+if (  ) {
+  
+  
+}
+for (int i=0;  i<2;  i++;) {
+  
+  
+}
+while (  ) {
+  
+  
+}
+특수:
+switch (  ) {
+  case 값1:
+    break;
+  default:
+    break;
+}
+if (  ) {
+  
+  
+}else{
+ 
+   
+}
+특수2:
+if (  ) {
+  
+  
+}else if (  ) {
+ 
+   
+}
+정적이라선언만되면좀나은변수:
+정수실수긴실수:
+int a=1;
+float b=1.01F;
+double db = 1.011;
+긴문자,조금긴문자,긴문자메모리:
+
+char d='가'
+char* dd="가나다메모리"
+int,char배열:
+int numbers[5];
+char[7] c;
+int,char배열초기화:
+int numbers[5] = {1, 2, 3, 4, 5};
+char[] c="abc123"
+메모리(포인터)와배열:
+int arr[3] = {10,20,30};
+int *p = arr;     // arr[0] 주소를 p에 저장
+printf("%d\n", *p); // 10
+동적포인터변수연속계산굿:
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int *p;           // 포인터 선언
+    p = (int*)malloc(sizeof(int)); // 정수 1개 동적 할당
+    *p = 10;          // 값 저장
+    printf("%d\n", *p); // 10 출력
+
+    free(p);          // 메모리 해제
+    return 0;
+}
+동적배열:
+int *arr;
+int n = 5;
+
+arr = (int*)malloc(n * sizeof(int)); // int 5개 동적 할당
+
+for (int i = 0; i < n; i++) {
+    arr[i] = i * 10;
+}
+
+free(arr); // 사용 후 반드시 해제
+포인터동적으로쓰는변수:
+int *p = (int*)malloc(sizeof(int));
+*p = 50;      // 동적 변수 값 설정
+free(p);      // 해제
+int,void함수지옥의불러오기:
+int defa() {
+  
+  return 0;
+}
+void defb() {
+  
+}
+함수성분:
+void defb(int a,  int* b) {
+  
+  
+}
