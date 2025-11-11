@@ -1,0 +1,4 @@
+# model.mtl
+newmtl Skin
+Kd 0.0 0.0 0.0       # 기본 색상
+map_Kd skin.png      # 텍스처 파일 이름
