@@ -1,0 +1,20 @@
+<script src="https://unpkg.com/blockly/blockly.min.js"></script>
+<div id="blocklyDiv" style="height: 480px; width: 600px;"></div>
+<xml id="toolbox" style="display: none">
+  <block type="controls_repeat_ext"></block>
+  <block type="math_number"></block>
+  <block type="text"></block>
+  <block type="text_print"></block>
+</xml>
+
+<script>
+  const workspace = Blockly.inject('blocklyDiv', {
+    toolbox: document.getElementById('toolbox')
+  });
+
+  function showCode() {
+    const code = Blockly.JavaScript.workspaceToCode(workspace);
+    console.log(code);
+  }
+</script>
+<button onclick="showCode()">자바스크립트 코드 보기</button>
