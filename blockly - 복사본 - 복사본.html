@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Unity-ready 블록코딩 + 함수 호출</title>
+  <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+</head>
+<body>
+<h1>Unity-ready 블록코딩 + 함수 호출 연결</h1>
+
+<textarea id="csharpInput" rows="12" cols="70">
+// C# 코드 예시
+public float GlobalScore;
+public float GlobalHealth;
+
+void StartGame() { }
+void EndGame() { }
+
+void MovePlayer() {
+    float distance;
+    float speed;
+    Debug.Log(3);
+    Debug.Log(5);
+}
+
+void PlayerJump() {
+    float jumpForce;
+    Debug.Log(10);
+}
+</textarea>
+<br>
+<button onclick="generateBlocks()">C# → 블록코딩 생성</button>
+<button onclick="generateCSharpFromBlocks()">블록 → C# 코드 생성</button>
+
+<div id="blocklyDiv" style="height: 400px; width: 600px;"></div>
+<pre id="csharpOutput"></pre>
+
+<script>
+var workspace = Blockly.inject('blocklyDiv', {toolbox: '<xml></xml>'});
+var blockcoding_structure = null;
+
+// ===================================================
+// 1️⃣ C# 코드 → 블록코딩 구조
+// ===================================================
+function generateBlocks() {
+    let csharpCode = document.getElementById("csharpInput").value;
+
+    let globalVars = [...csharpCode.matchAll(/public float (\w+);/g)].map(m=>m[1]);
+    let globalFuncsAll = [...csharpCode.matchAll(/void (\w+)\s*\(\)/g)].map(m=>m[1]);
+    let funcMatches = [...csharpCode.matchAll(/void (\w+)\s*\(\)\s*{([\s\S]*?)}/g)];
+
+    let funcBlocks = [];
+
+    funcMatches.forEach(match=>{
+        let funcName = match[1];
+        let body = match[2];
+
+        let localVars = [...body.matchAll(/float (\w+);/g)].map(m=>m[1]);
+        let params = [...body.matchAll(/Debug\.Log\((.*?)\);/g)].map(m=>isNaN(m[1])?m[1]:Number(m[1]));
+
+        funcBlocks.push({블록라벨: funcName, 함수이름: funcName, 변수: localVars, 파라미터: params});
+    });
+
+    let globalFuncs = globalFuncsAll.filter(f=>!funcBlocks.map(b=>b.함수이름).includes(f));
+
+    blockcoding_structure = {
+        함수블록코딩: funcBlocks,
+        전역변수블록코딩: {변수: globalVars, 함수: globalFuncs, 파라미터:[]},
+        지역변수블록코딩: []
+    };
+
+    workspace.clear();
+
+    // Blockly 블록 생성 + 파라미터 입력 + 연결 가능
+    funcBlocks.forEach(fb=>{
+        Blockly.Blocks[fb.블록라벨] = {
+            init: function() {
+                this.appendDummyInput().appendField(fb.블록라벨);
+                fb.파라미터.forEach((p,i)=>{
+                    this.appendDummyInput()
+                        .appendField(`Param${i+1}`)
+                        .appendField(new Blockly.FieldNumber(p), `PARAM${i}`);
+                });
+                this.setPreviousStatement(true);
+                this.setNextStatement(true);
+                this.setColour(230);
+            }
+        };
+        let block = workspace.newBlock(fb.블록라벨);
+        block.initSvg();
+        block.render();
+    });
+
+    alert("Unity-ready 블록 생성 완료! 이제 블록 연결로 함수 호출 순서를 조절하세요.");
+}
+
+// ===================================================
+// 2️⃣ 블록 연결 + 함수 호출 → Unity C# 코드 생성
+// ===================================================
+function generateCSharpFromBlocks() {
+    if(!blockcoding_structure){ alert("먼저 C# → 블록 변환 후 진행"); return; }
+
+    let codeLines = [];
+    codeLines.push("using UnityEngine;\npublic class BlockScript : MonoBehaviour {");
+
+    // 전역 변수/함수
+    blockcoding_structure.전역변수블록코딩.변수.forEach(v=>codeLines.push(`    public float ${v};`));
+    blockcoding_structure.전역변수블록코딩.함수.forEach(f=>codeLines.push(`    void ${f}() { }`));
+    codeLines.push("");
+
+    // topBlocks 기준으로 연결 순서 순회
+    let topBlocks = workspace.getTopBlocks(true);
+    topBlocks.forEach(tb=>{
+        let b = tb;
+        while(b){
+            let fb = blockcoding_structure.함수블록코딩.find(f=>f.블록라벨===b.type);
+            if(fb){
+                codeLines.push(`    void ${fb.함수이름}() {`);
+                fb.변수.forEach(v=>codeLines.push(`        float ${v};`));
+                fb.파라미터.forEach((p,i)=>{
+                    let val = b.getFieldValue(`PARAM${i}`);
+                    codeLines.push(`        Debug.Log(${val});`);
+                });
+                // 다음 블록이 있다면 함수 호출로 연결
+                let nextBlock = b.getNextBlock();
+                if(nextBlock){
+                    let nextFunc = blockcoding_structure.함수블록코딩.find(f=>f.블록라벨===nextBlock.type);
+                    if(nextFunc){
+                        codeLines.push(`        ${nextFunc.함수이름}();`);
+                    }
+                }
+                codeLines.push("    }\n");
+            }
+            b = b.getNextBlock();
+        }
+    });
+
+    codeLines.push("}");
+    document.getElementById("csharpOutput").textContent = codeLines.join("\n");
+}
+</script>
+</body>
+</html>
