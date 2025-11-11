@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Blockly Python Local</title>
+  <script src="blockly/blockly.min.js"></script>
+  <script src="blockly/generators/python/python_compressed.js"></script>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    #blocklyDiv { height: 70%; width: 100%; }
+    #buttons { height: 30%; padding: 10px; }
+  </style>
+</head>
+<body>
+  <div id="blocklyDiv"></div>
+  <div id="buttons">
+    <button onclick="generatePython()">Python 코드 보기</button>
+    <button onclick="savePython()">Python 파일 저장</button>
+    <pre id="codeArea"></pre>
+  </div>
+
+  <xml id="toolbox" style="display: none">
+    <block type="controls_if"></block>
+    <block type="logic_compare"></block>
+    <block type="math_number"></block>
+    <block type="math_arithmetic"></block>
+    <block type="text"></block>
+    <block type="text_print"></block>
+  </xml>
+
+  <script>
+    const workspace = Blockly.inject('blocklyDiv', {
+      toolbox: document.getElementById('toolbox')
+    });
+
+    function generatePython() {
+      const code = Blockly.Python.workspaceToCode(workspace);
+      document.getElementById('codeArea').innerText = code;
+    }
+
+    function savePython() {
+      const code = Blockly.Python.workspaceToCode(workspace);
+      // PySide6와 통신: window.qtBridge.saveFile(code) 호출
+      if (window.qtBridge) {
+        window.qtBridge.saveFile(code);
+      } else {
+        alert("PySide6와 연결되지 않았습니다.");
+      }
+    }
+  </script>
+</body>
+</html>
